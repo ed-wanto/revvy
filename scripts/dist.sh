@@ -62,6 +62,16 @@ echo "▶ 署名の検証"
 codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 codesign -dv "$APP_PATH" 2>&1 | grep -E "Authority=Developer ID|TeamIdentifier"
 
+if (( NOTARIZE )); then
+  # アプリ本体にもチケットを埋め込む。DMG だけだと、コピーしたアプリがオフラインで検証できない。
+  echo "▶ アプリの公証（Apple に送信して待機。数分かかります）"
+  ditto -c -k --keepParent "$APP_PATH" "$DIST/$APP-app.zip"
+  xcrun notarytool submit "$DIST/$APP-app.zip" --keychain-profile "$NOTARY_PROFILE" --wait
+  xcrun stapler staple "$APP_PATH"
+  xcrun stapler validate "$APP_PATH"
+  rm -f "$DIST/$APP-app.zip"
+fi
+
 echo "▶ DMG 作成（インストール画面つき）"
 # 背景とボリュームアイコンを作り直してから、dmgbuild でレイアウトごと組み立てる。
 # dmgbuild が無い環境では、素の DMG にフォールバックする。
@@ -80,7 +90,7 @@ fi
 codesign --sign "Developer ID Application" --timestamp "$DMG"
 
 if (( NOTARIZE )); then
-  echo "▶ 公証（Apple に送信して待機。数分かかります）"
+  echo "▶ DMG の公証（Apple に送信して待機。数分かかります）"
   xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait
 
   echo "▶ ステープル"
