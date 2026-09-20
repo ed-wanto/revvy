@@ -1,0 +1,56 @@
+name: Bug report / 不具合の報告
+description: Something doesn't work as expected. / 期待どおりに動かない
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not attach screenshots containing personal or confidential information. Report security issues via SECURITY.md.
+        個人情報や機密情報が写ったスクリーンショットは添付しないでください。脆弱性は SECURITY.md の手順で報告してください。
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened? / 何が起きましたか
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 再現手順
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 期待する動作
+    validations:
+      required: true
+  - type: input
+    id: revvy-version
+    attributes:
+      label: Revvy version / Revvy のバージョン
+      placeholder: "0.1.0 (1)"
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version and Mac model / macOS のバージョンと Mac の機種
+      placeholder: "macOS 15.4, MacBook Air (M2)"
+    validations:
+      required: true
+  - type: dropdown
+    id: displays
+    attributes:
+      label: Displays / ディスプレイ
+      options:
+        - Single display / 1 台
+        - Multiple displays / 複数台
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else? / 補足

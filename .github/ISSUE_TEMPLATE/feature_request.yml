@@ -1,0 +1,20 @@
+name: Feature request / 機能の提案
+description: Suggest an idea or improvement. / アイデアや改善の提案
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve? / どんな困りごとを解決しますか
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution / 提案する解決策
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered / 検討した代替案

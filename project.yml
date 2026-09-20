@@ -1,0 +1,87 @@
+name: Revvy
+options:
+  bundleIdPrefix: com.wanto
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  developmentLanguage: ja
+
+configs:
+  Debug: debug
+  Release: release
+  # Mac App Store 提出用（App Sandbox 有効・Bundle ID com.wanto.revvy）。docs/APP_STORE.md を参照
+  AppStore: release
+
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
+  AppStore: Config/AppStore.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  IssueShot:
+    type: application
+    platform: macOS
+    sources:
+      - IssueShot
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wanto.IssueShot
+        PRODUCT_NAME: Revvy
+        PRODUCT_MODULE_NAME: IssueShot
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Revvy
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        # HTTPS（OS 標準）しか使わないので輸出コンプライアンスの暗号化申告は不要
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        # Direct distribution build; App Store readiness is tracked in docs/APP_STORE.md.
+        ENABLE_APP_SANDBOX: NO
+        ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        COMBINE_HIDPI_IMAGES: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+      configs:
+        AppStore:
+          PRODUCT_BUNDLE_IDENTIFIER: com.wanto.revvy
+          ENABLE_APP_SANDBOX: YES
+          CODE_SIGN_ENTITLEMENTS: Config/Revvy-AppStore.entitlements
+          # gh CLI からのトークン取り込み（子プロセス実行）を Store 版から外す
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: APP_STORE
+
+  IssueShotTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - IssueShotTests
+    dependencies:
+      - target: IssueShot
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wanto.IssueShotTests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Revvy.app/Contents/MacOS/Revvy"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  IssueShot:
+    build:
+      targets:
+        IssueShot: all
+        IssueShotTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - IssueShotTests
+    archive:
+      config: Release

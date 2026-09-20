@@ -1,0 +1,6 @@
+// Mac App Store 提出用。チーム ID はコマンドラインで渡す（scripts/appstore.sh）。
+// 個人の Local.xcconfig は Developer ID 用の設定を含むので読み込まない。
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development
+DEVELOPMENT_TEAM =
+PROVISIONING_PROFILE_SPECIFIER =
