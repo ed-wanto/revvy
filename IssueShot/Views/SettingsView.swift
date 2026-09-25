@@ -99,10 +99,8 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 520)
-        // 項目が増えて小さい画面に収まらなくなるので、高さに上限を付けて中身をスクロールさせる
-        .frame(maxHeight: 680)
-        .fixedSize(horizontal: false, vertical: true)
+        // 項目が増えて小さい画面に収まらなくなったので、高さを決めて中身をスクロールさせる
+        .frame(width: 520, height: 680)
     }
 }
 

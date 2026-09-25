@@ -146,11 +146,11 @@ final class CaptureControls {
     func capture(_ mode: CaptureMode) async {
         guard !model.isCapturing else { return }
         let previousApp = NSWorkspace.shared.frontmostApplication
-        let captured = await model.capture(mode)
-        if captured || model.errorMessage != nil {
+        switch await model.capture(mode) {
+        case .captured, .failed:
             presentMainWindow()
-        } else if let previousApp, previousApp != NSRunningApplication.current {
-            previousApp.activate()
+        case .cancelled:
+            if let previousApp, previousApp != NSRunningApplication.current { previousApp.activate() }
         }
     }
 
@@ -167,6 +167,8 @@ final class CaptureControls {
     }
 
     func presentMainWindow() {
+        // ⌘H で隠していると開いている編集画面も見えない扱いになり、もう1枚開いてしまうので先に戻す
+        if NSApp.isHidden { NSApp.unhide(nil) }
         NSApp.activate()
         let window = NSApp.windows.first {
             $0.identifier?.rawValue.hasPrefix("main") == true && ($0.isVisible || $0.isMiniaturized)
@@ -174,21 +176,31 @@ final class CaptureControls {
         if let window {
             if window.isMiniaturized { window.deminiaturize(nil) }
             window.makeKeyAndOrderFront(nil)
-        } else if !Self.chooseNewWindowCommand() {
-            // メニューの項目が見つからないとき（「新規ウインドウ」のキーを変えたなど）だけ
-            if let openMainWindow { openMainWindow() } else { model.showWindow() }
+            return
         }
+        if let item = Self.newWindowMenuItem(), let action = item.action,
+           NSApp.sendAction(action, to: item.target, from: item) {
+            return
+        }
+        if let openMainWindow {
+            openMainWindow()
+            return
+        }
+        assertionFailure("編集画面を開く手段が無い（「新規ウインドウ」のメニュー項目も openWindow も見つからない）")
+        model.showWindow()
     }
 
-    /// 編集画面がひとつも無いときは、SwiftUI が「ファイル」メニューに置く「新規ウインドウ」（⌘N）を選んだことにして開く。
+    /// 編集画面がひとつも無いときは、SwiftUI が「ファイル」メニューに置く「新規ウインドウ」を選んだことにして開く。
     /// 起動時は編集画面を開かないので、openWindow を受け取れるビューがまだ無い（App やパネルから読んだものは効く保証が無い）。
-    private static func chooseNewWindowCommand() -> Bool {
-        let item = NSApp.mainMenu?.items
-            .compactMap(\.submenu)
-            .flatMap(\.items)
-            .first { $0.keyEquivalent == "n" && $0.keyEquivalentModifierMask == .command }
-        guard let item, let action = item.action else { return false }
-        return NSApp.sendAction(action, to: item.target, from: item)
+    private static func newWindowMenuItem() -> NSMenuItem? {
+        let items = NSApp.mainMenu?.items.compactMap(\.submenu).flatMap(\.items) ?? []
+        if let item = items.first(where: { $0.keyEquivalent == "n" && $0.keyEquivalentModifierMask == .command }) {
+            return item
+        }
+        // ⌘N を別のキーに変えられていたら、この App がすぐ後ろに置いている「範囲を選んで撮影」の手前の項目を使う
+        let capture = String(localized: "範囲を選んで撮影")
+        guard let anchor = items.first(where: { $0.title == capture }), let menu = anchor.menu else { return nil }
+        return menu.items[..<menu.index(of: anchor)].last { !$0.isSeparatorItem && $0.action != nil }
     }
 
     private func updatePanel() {
