@@ -26,6 +26,26 @@ struct SettingsView: View {
             }
 
             Section {
+                Toggle("フローティングパネルを表示", isOn: Binding(
+                    get: { controls.isPanelVisible }, set: { controls.isPanelVisible = $0 }
+                ))
+                Picker("サイズ", selection: Binding(get: { controls.panelSize }, set: { controls.panelSize = $0 })) {
+                    ForEach(CapturePanelSize.allCases) { size in
+                        Text(size.title).tag(size)
+                    }
+                }
+                .pickerStyle(.segmented)
+                LabeledContent("色") {
+                    CapturePanelColorPicker(selection: Binding(get: { controls.panelColor }, set: { controls.panelColor = $0 }))
+                }
+                Text("起動時に出るのはこのパネルだけです（隠しているときは編集画面を開きます）。大きさと色はパネルの右クリックでも変えられます。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("フローティングパネル")
+            }
+
+            Section {
                 ForEach(ShortcutAction.allCases) { action in
                     LabeledContent(action.title) {
                         ShortcutRecorder(action: action)
@@ -36,9 +56,6 @@ struct SettingsView: View {
                             .foregroundStyle(.orange)
                     }
                 }
-                Toggle("フローティングパネルを表示", isOn: Binding(
-                    get: { controls.isPanelVisible }, set: { controls.isPanelVisible = $0 }
-                ))
                 HStack {
                     Text("どのアプリを使っていても使えます。ルーラーはスクリーンショットを撮らずに画面の上で測れます。")
                         .font(.caption)
@@ -83,6 +100,8 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 520)
+        // 項目が増えて小さい画面に収まらなくなるので、高さに上限を付けて中身をスクロールさせる
+        .frame(maxHeight: 680)
         .fixedSize(horizontal: false, vertical: true)
     }
 }

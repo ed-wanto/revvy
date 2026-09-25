@@ -147,6 +147,7 @@ final class GuidePanel: NSPanel {
     func duplicate() { owner?.duplicate(self) }
     func remove() { owner?.remove(self) }
     func hideAll() { owner?.toggleVisibility() }
+    func clearAllRulers() { owner?.closeAll() }
 
     func showLabel(_ text: String) {
         labelPanel.setText(text)
@@ -291,12 +292,14 @@ private final class GuideView: NSView {
         menu.addItem(withTitle: String(localized: "複製"), action: #selector(duplicateGuide), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: String(localized: "すべてのルーラーを隠す"), action: #selector(hideAll), keyEquivalent: "").target = self
+        menu.addItem(withTitle: String(localized: "ルーラーとガイド線をすべて消す"), action: #selector(clearRulers), keyEquivalent: "").target = self
         menu.addItem(withTitle: String(localized: "削除"), action: #selector(removeGuide), keyEquivalent: "").target = self
         return menu
     }
 
     @objc private func duplicateGuide() { panel?.duplicate() }
     @objc private func hideAll() { panel?.hideAll() }
+    @objc private func clearRulers() { panel?.clearAllRulers() }
     @objc private func removeGuide() { panel?.remove() }
 
     // MARK: キーボード

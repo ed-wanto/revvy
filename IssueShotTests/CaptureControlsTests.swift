@@ -90,6 +90,32 @@ struct CaptureControlsTests {
         #expect(!CaptureControls(model: AppModel(), defaults: defaults).isPanelVisible)
     }
 
+    @Test func panelAppearanceStartsWithPreviousLook() {
+        let controls = CaptureControls(model: AppModel(), defaults: makeDefaults())
+        #expect(controls.panelSize == .medium)
+        #expect(controls.panelColor == .standard)
+    }
+
+    @Test func remembersPanelAppearance() {
+        let defaults = makeDefaults()
+        let controls = CaptureControls(model: AppModel(), defaults: defaults)
+        controls.panelSize = .large
+        controls.panelColor = .graphite
+
+        let reloaded = CaptureControls(model: AppModel(), defaults: defaults)
+        #expect(reloaded.panelSize == .large)
+        #expect(reloaded.panelColor == .graphite)
+    }
+
+    @Test func unknownPanelAppearanceFallsBackToDefaults() {
+        let defaults = makeDefaults()
+        defaults.set("huge", forKey: CaptureControls.panelSizeKey)
+        defaults.set("rainbow", forKey: CaptureControls.panelColorKey)
+        let controls = CaptureControls(model: AppModel(), defaults: defaults)
+        #expect(controls.panelSize == .medium)
+        #expect(controls.panelColor == .standard)
+    }
+
     @Test func capturingClearsRulersAndGuides() {
         let model = AppModel()
         let controls = CaptureControls(model: model, defaults: makeDefaults())
@@ -98,6 +124,25 @@ struct CaptureControlsTests {
         #expect(!controls.rulers.isEmpty)
         model.didCapture?()
         #expect(controls.rulers.isEmpty)
+    }
+
+    @Test func clearRulersActionRemovesRulersAndGuides() {
+        let controls = CaptureControls(model: AppModel(), defaults: makeDefaults())
+        controls.rulers.add(frame: CGRect(x: 100, y: 100, width: 320, height: 200))
+        controls.rulers.addGuide(.horizontal)
+        controls.perform(.clearRulers)
+        #expect(controls.rulers.isEmpty)
+    }
+
+    @Test func clearingHiddenRulersShowsTheNextOne() {
+        let controls = CaptureControls(model: AppModel(), defaults: makeDefaults())
+        controls.rulers.add(frame: CGRect(x: 100, y: 100, width: 320, height: 200))
+        controls.rulers.toggleVisibility()
+        #expect(controls.rulers.isHidden)
+        controls.rulers.closeAll()
+        // 隠したまま消しても、次に置くルーラーは見える
+        #expect(controls.rulers.isEmpty)
+        #expect(!controls.rulers.isHidden)
     }
 
     @Test func assigningDuplicateMovesShortcut() {

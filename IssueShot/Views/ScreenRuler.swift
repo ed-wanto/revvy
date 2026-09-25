@@ -1,8 +1,11 @@
 import AppKit
+import Observation
 
 /// 画面の上に浮かべて測るルーラー（Linear 相当）。スクリーンショットを撮らずに、どのアプリの上でも使える。
 /// 値はポイント単位。Web の CSS px と同じ尺度なので、そのまま px として表示する。
+/// 「すべて消す」ボタンを押せるかどうかを出し分けるので、並んでいるかどうかは観測できるようにする。
 @MainActor
+@Observable
 final class ScreenRulers {
     private var panels: [RulerPanel] = []
     private var guides: [GuidePanel] = []
@@ -38,6 +41,7 @@ final class ScreenRulers {
         if isEmpty { isHidden = false }
     }
 
+    /// ルーラーとガイド線をまとめて片付ける（パネルの消しゴムボタン、メニュー、撮影後）
     func closeAll() {
         panels.forEach { $0.orderOut(nil) }
         guides.forEach { $0.orderOut(nil) }
@@ -194,6 +198,7 @@ final class RulerPanel: NSPanel {
     func duplicate() { owner?.duplicate(self) }
     func closeRuler() { owner?.close(self) }
     func hideAllRulers() { owner?.toggleVisibility() }
+    func clearAllRulers() { owner?.closeAll() }
     func addGuide(_ orientation: GuideOrientation) { owner?.addGuide(orientation) }
 
     func nudge(dx: CGFloat, dy: CGFloat) {
@@ -429,6 +434,7 @@ private final class RulerView: NSView {
         menu.addItem(withTitle: String(localized: "横のガイド線を追加"), action: #selector(addHorizontalGuide), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: String(localized: "すべてのルーラーを隠す"), action: #selector(hideRulers), keyEquivalent: "").target = self
+        menu.addItem(withTitle: String(localized: "ルーラーとガイド線をすべて消す"), action: #selector(clearRulers), keyEquivalent: "").target = self
         menu.addItem(withTitle: String(localized: "閉じる"), action: #selector(closeRuler), keyEquivalent: "").target = self
         return menu
     }
@@ -439,6 +445,7 @@ private final class RulerView: NSView {
     @objc private func duplicateRuler() { panel?.duplicate() }
     @objc private func toggleGuides() { toggleCenterGuides() }
     @objc private func hideRulers() { panel?.hideAllRulers() }
+    @objc private func clearRulers() { panel?.clearAllRulers() }
     @objc private func closeRuler() { panel?.closeRuler() }
 
     // MARK: キーボード

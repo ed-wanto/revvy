@@ -11,6 +11,7 @@ enum ShortcutAction: String, CaseIterable, Identifiable, Sendable {
     case toggleRulers
     case newVerticalGuide
     case newHorizontalGuide
+    case clearRulers
 
     var id: String { rawValue }
 
@@ -23,6 +24,7 @@ enum ShortcutAction: String, CaseIterable, Identifiable, Sendable {
         case .toggleRulers: String(localized: "ルーラーの表示切替")
         case .newVerticalGuide: String(localized: "縦のガイド線を追加")
         case .newHorizontalGuide: String(localized: "横のガイド線を追加")
+        case .clearRulers: String(localized: "ルーラーとガイド線をすべて消す")
         }
     }
 
@@ -36,6 +38,7 @@ enum ShortcutAction: String, CaseIterable, Identifiable, Sendable {
         case .toggleRulers: GlobalShortcut(keyCode: UInt32(kVK_ANSI_T), modifiers: [.control, .command], key: "T")
         case .newVerticalGuide: nil
         case .newHorizontalGuide: nil
+        case .clearRulers: nil
         }
     }
 
