@@ -19,16 +19,23 @@ struct RevvyApp: App {
                 }
         }
         .defaultSize(width: 1180, height: 820)
+        // 起動時はフローティングパネルだけを出し、編集画面は撮影したとき（「Revvy を開く」や Dock からも）に開く。
+        // パネルを隠していると入口が見えなくなるので、そのときだけ起動時にも開く。
+        // 編集画面を開く流れは CaptureControls.presentMainWindow() にまとめてある。
+        .defaultLaunchBehavior(controls.isPanelVisible ? .suppressed : .automatic)
+        // 前回終了時に開いていても、起動時に編集画面を戻さない
+        .restorationBehavior(.disabled)
         .commands {
             CommandGroup(after: .newItem) {
                 // ⌘⇧3 / ⌘⇧4 は macOS が先に取るので、設定で登録したグローバルショートカットを表示する。
-                Button("範囲を選んで撮影") { Task { await model.capture(.interactive) } }
+                // 編集画面を閉じていても使えるので、パネルから撮ったときと同じく撮ったあとは編集画面を出す。
+                Button("範囲を選んで撮影") { Task { await controls.capture(.interactive) } }
                     .keyboardShortcut(controls.shortcuts[.captureRegion]?.menuShortcut)
                     .disabled(model.isCapturing)
-                Button("画面全体を撮影") { Task { await model.capture(.fullScreen) } }
+                Button("画面全体を撮影") { Task { await controls.capture(.fullScreen) } }
                     .keyboardShortcut(controls.shortcuts[.captureFullScreen]?.menuShortcut)
                     .disabled(model.isCapturing)
-                Button("クリップボードの画像を使う") { model.pasteScreenshot() }
+                Button("クリップボードの画像を使う") { controls.pasteScreenshot() }
                     .keyboardShortcut("v", modifiers: [.command, .shift])
                     .disabled(model.isCapturing)
             }
@@ -87,6 +94,9 @@ struct RevvyApp: App {
                 .keyboardShortcut(controls.shortcuts[.newVerticalGuide]?.menuShortcut)
             Button("横のガイド線を追加") { controls.rulers.addGuide(.horizontal) }
                 .keyboardShortcut(controls.shortcuts[.newHorizontalGuide]?.menuShortcut)
+            Button("ルーラーとガイド線をすべて消す") { controls.rulers.closeAll() }
+                .keyboardShortcut(controls.shortcuts[.clearRulers]?.menuShortcut)
+                .disabled(controls.rulers.isEmpty)
             Toggle("フローティングパネルを表示", isOn: Binding(
                 get: { controls.isPanelVisible }, set: { controls.isPanelVisible = $0 }
             ))
@@ -145,9 +155,28 @@ final class RevvyAppDelegate: NSObject, NSApplicationDelegate {
         // テストのホストとして起動したときは、ホットキーやパネルを出さない。
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
             controls.start()
+            // 起動時は編集画面を開かないので、撮る前に履歴と GitHub の連携を読み込んでおく
+            Task { await model.bootstrap() }
+            // Dock のアイコンを押したとき（起動中にもう一度開いたときも）は編集画面を出す。
+            // 起動時に出さない画面は SwiftUI が Dock からも開かず、applicationShouldHandleReopen もこのデリゲートには
+            // 届かないことがあるので、「再度開く」Apple イベントを直接受ける。SwiftUI の起動処理のあとで登録して上書きされないようにする。
+            Task { installReopenHandler() }
         }
         guard let url = Bundle.main.url(forResource: "RevvyDockIcon", withExtension: "png"),
               let icon = NSImage(contentsOf: url) else { return }
         NSApplication.shared.applicationIconImage = icon
+    }
+
+    private func installReopenHandler() {
+        NSAppleEventManager.shared().setEventHandler(
+            self,
+            andSelector: #selector(handleReopen(_:withReplyEvent:)),
+            forEventClass: AEEventClass(kCoreEventClass),
+            andEventID: AEEventID(kAEReopenApplication)
+        )
+    }
+
+    @objc private func handleReopen(_ event: NSAppleEventDescriptor, withReplyEvent reply: NSAppleEventDescriptor) {
+        controls.presentMainWindow()
     }
 }

@@ -48,7 +48,8 @@ Revvy is a native macOS app for showing — not just describing — what needs t
 **Capture from anywhere**
 - Region and full-screen capture with ScreenCaptureKit
 - Global shortcuts that work in any app (default <kbd>⌃⇧4</kbd> region, <kbd>⌃⇧3</kbd> full screen), customizable in Settings
-- A small floating capture panel that stays on top of every app and can be collapsed to a single button
+- A small floating capture panel that stays on top of every app, collapses to a single button, and comes in four sizes and several colors
+- Only the floating panel appears at launch; the editor opens when you capture
 - Menu bar menu for capture, rulers and settings
 - Multi-display aware: the selection overlay appears on every display, and the display you drag on is the one captured
 - Import by drag and drop (Finder, browsers, Photos, the macOS screenshot thumbnail), from the clipboard, or from a file
@@ -66,6 +67,7 @@ Revvy is a native macOS app for showing — not just describing — what needs t
 - Drag to move, drag edges to resize, arrow keys to nudge, <kbd>⌥</kbd>+arrows to resize
 - Tick marks every 10 px, center guides, duplicate, multiple rulers at once
 - Vertical and horizontal guide lines that span the whole display, with their position and the gap to the nearest parallel line
+- Clear every ruler and guide line at once with a single button
 - Rulers and guide lines are included in screenshots, so you can share the measurement
 
 **Keep and find**
@@ -97,7 +99,7 @@ See [Building from source](#building-from-source).
 
 ### First launch
 
-1. Open Revvy. The floating capture panel appears near the top-right of the screen.
+1. Open Revvy. The floating capture panel appears near the top-right of the screen. At launch only the panel (and the menu bar icon) appears; the editor opens when you capture.
 2. Take your first capture. macOS asks for **Screen Recording** permission — allow Revvy in **System Settings → Privacy & Security → Screen & System Audio Recording**.
 3. If capturing still fails, quit and reopen Revvy (macOS sometimes applies the permission only after a restart).
 
@@ -113,9 +115,11 @@ See [Building from source](#building-from-source).
 | Drag and drop | Drop an image onto the Revvy window or the floating panel. |
 | **Capture ▾ → Open Image File…** in the toolbar | Opens an image file. |
 
+Capturing (or pasting or dropping an image) opens the editor. You can also open it with the panel's **Open Revvy** button, the menu bar menu, or the Dock icon.
+
 The Revvy window and the floating panel never show up in screenshots. On-screen rulers and guide lines do, so a capture keeps your measurement (their hover-only buttons are hidden). After a capture, all rulers and guide lines are removed from the screen; cancelling with <kbd>Esc</kbd> keeps them.
 
-The floating panel's **×** collapses it to a single button; click that button to expand it again. To hide the panel completely, use the menu bar menu, Settings, or a shortcut.
+The **»** at the right end of the floating panel collapses it to a single button; click **«** to expand it again. Right-click the panel to change its size (Small, Medium, Large, Extra Large) and color, or change them in Settings. To hide the panel completely, use the menu bar menu, Settings, or a shortcut. While the panel is hidden, the editor opens at launch.
 
 ### Annotating
 
@@ -141,6 +145,8 @@ Click the ruler button in the floating panel, choose **Add Screen Ruler** from t
 
 **Guide lines** — click the vertical or horizontal line button in the floating panel (or use the menu bar menu, or a ruler's right-click menu) to draw a line across the whole display at the pointer. Drag it, or use the arrow keys (<kbd>⇧</kbd> for 10 px), to move it. Its label shows the distance from the left or top edge of the display and, when there is another parallel line, the gap between them. <kbd>⌘D</kbd> duplicates, <kbd>Esc</kbd> or <kbd>⌫</kbd> removes. You can assign global shortcuts in Settings.
 
+**Clear all** — the eraser button in the floating panel, or **Clear All Rulers and Guides** in the menu bar menu or a ruler's or guide line's right-click menu, removes every ruler and guide line at once. You can assign a global shortcut in Settings.
+
 Sizes are in points, which match CSS pixels. The unit (px / em) follows the ruler setting.
 
 ### Sharing to GitHub
@@ -164,6 +170,7 @@ Organization repositories may require the organization to approve the OAuth app.
 | <kbd>⌃⌘T</kbd> | Show / hide rulers | Global (customizable) |
 | — | Show / hide floating panel | Global (assign in Settings) |
 | — | Add vertical / horizontal guide line | Global (assign in Settings) |
+| — | Clear all rulers and guide lines | Global (assign in Settings) |
 | <kbd>⌘⇧V</kbd> | Use clipboard image | App |
 | <kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd> | Undo / redo (text while typing, annotations otherwise) | App |
 | <kbd>⌘D</kbd> | Duplicate selected annotation or ruler | App / ruler |
@@ -179,7 +186,8 @@ macOS reserves <kbd>⌘⇧3</kbd>, <kbd>⌘⇧4</kbd> and <kbd>⌘⇧5</kbd> for
 
 Open **Revvy → Settings…** (<kbd>⌘,</kbd>) or **Settings…** in the menu bar menu.
 
-- **Shortcuts** — record global shortcuts (click, then press keys; <kbd>Esc</kbd> cancels, <kbd>⌫</kbd> clears), show or hide the floating panel, reset to defaults. Revvy warns when another app already uses a combination.
+- **Floating Panel** — show or hide the floating panel, and choose its size (Small, Medium, Large, Extra Large) and color.
+- **Shortcuts** — record global shortcuts (click, then press keys; <kbd>Esc</kbd> cancels, <kbd>⌫</kbd> clears), reset to defaults. Revvy warns when another app already uses a combination.
 - **Rulers** — unit (px, em, or both) and the root `font-size` used for em.
 - **Issue** — label added automatically (default `app-feedback`) and the branch used for screenshots (default `feedback-assets`).
 - **GitHub** — optional OAuth App Client ID override for forks.
