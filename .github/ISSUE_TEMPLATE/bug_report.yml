@@ -33,7 +33,7 @@ body:
     id: revvy-version
     attributes:
       label: Revvy version / Revvy のバージョン
-      placeholder: "0.1.0 (1)"
+      placeholder: "0.2.0 (2)"
     validations:
       required: true
   - type: input
