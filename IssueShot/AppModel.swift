@@ -29,6 +29,13 @@ struct SubmitResult: Equatable {
     let screenshotUploaded: Bool
 }
 
+/// 撮影の結果。撮れたか、Esc でやめたか、権限などで撮れなかったか（理由は errorMessage に入る）。
+enum CaptureOutcome {
+    case captured
+    case cancelled
+    case failed
+}
+
 @MainActor
 @Observable
 final class AppModel {
@@ -262,25 +269,25 @@ final class AppModel {
 
     // MARK: - スクリーンショット
 
-    /// 画像を取り込めたら true。Esc でのキャンセルや権限エラーは false。
+    /// Esc でのキャンセルと、権限エラーなどで撮れなかった場合を分けて返す。
     @discardableResult
-    func capture(_ mode: CaptureMode) async -> Bool {
-        guard !isCapturing else { return false }
+    func capture(_ mode: CaptureMode) async -> CaptureOutcome {
+        guard !isCapturing else { return .cancelled }
         isCapturing = true
         errorMessage = nil
         defer { isCapturing = false }
         do {
-            guard let image = try await ScreenCaptureService.capture(mode) else { return false }
+            guard let image = try await ScreenCaptureService.capture(mode) else { return .cancelled }
             setScreenshot(image)
             didCapture?()
-            return true
+            return .captured
         } catch ScreenCaptureError.permissionDenied {
             errorMessage = ScreenCaptureError.permissionDenied.errorDescription
             NSWorkspace.shared.open(ScreenCaptureError.settingsURL)
         } catch {
             errorMessage = String(localized: "撮影に失敗: \(error.localizedDescription)")
         }
-        return false
+        return .failed
     }
 
     func pasteScreenshot() {

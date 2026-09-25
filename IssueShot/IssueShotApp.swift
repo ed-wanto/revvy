@@ -22,7 +22,7 @@ struct RevvyApp: App {
         // 起動時はフローティングパネルだけを出し、編集画面は撮影したとき（「Revvy を開く」や Dock からも）に開く。
         // パネルを隠していると入口が見えなくなるので、そのときだけ起動時にも開く。
         // 編集画面を開く流れは CaptureControls.presentMainWindow() にまとめてある。
-        .defaultLaunchBehavior(controls.isPanelVisible ? .suppressed : .automatic)
+        .defaultLaunchBehavior(appDelegate.showsPanelAtLaunch ? .suppressed : .automatic)
         // 前回終了時に開いていても、起動時に編集画面を戻さない
         .restorationBehavior(.disabled)
         .commands {
@@ -144,10 +144,13 @@ enum UndoRouter {
 final class RevvyAppDelegate: NSObject, NSApplicationDelegate {
     let model: AppModel
     let controls: CaptureControls
+    /// 起動時にパネルを出すか。起動後に切り替えるたびにシーンを作り直さないよう、起動時の値だけを持つ。
+    let showsPanelAtLaunch: Bool
 
     override init() {
         model = AppModel()
         controls = CaptureControls(model: model)
+        showsPanelAtLaunch = controls.isPanelVisible
         super.init()
     }
 

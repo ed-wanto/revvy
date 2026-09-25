@@ -15,6 +15,18 @@ struct CapturePanelAppearanceTests {
         #expect(Set(sizes).count == sizes.count)
     }
 
+    /// 余白や区切り線は整数の pt に丸める（1pt の線がにじまないように）。中は以前の寸法のまま。
+    @Test func scaledLengthsStayOnWholePoints() {
+        let lengths: [CGFloat] = [2, 3, 4, 5, 11, 14, 18]
+        for size in CapturePanelSize.allCases {
+            for length in lengths {
+                let value = size.scaled(length)
+                #expect(value == value.rounded(), "\(size.rawValue) \(length)")
+            }
+        }
+        #expect(lengths.map { CapturePanelSize.medium.scaled($0) } == lengths)
+    }
+
     @Test func onlyStandardUsesTheSystemMaterial() {
         #expect(CapturePanelColor.allCases.filter { $0.fillRGB == nil } == [.standard])
     }

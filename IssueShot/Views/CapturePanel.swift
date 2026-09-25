@@ -61,9 +61,10 @@ final class CapturePanelController {
         )
     }
 
-    /// 表示前の中身の大きさを測る
+    /// 表示前の中身の大きさを測る。窓の枠が半端な位置にならないよう整数に切り上げる。
     private static func fittingSize(of view: CapturePanelView) -> CGSize {
-        NSHostingView(rootView: view).fittingSize
+        let size = NSHostingView(rootView: view).fittingSize
+        return CGSize(width: size.width.rounded(.up), height: size.height.rounded(.up))
     }
 
     /// 初期位置が画面の右上なので、右上の角を動かさずに大きさを変える（右端から飛び出さないように）
@@ -101,12 +102,12 @@ private struct CapturePanelView: View {
     let look: CapturePanelLook
     @State private var isDropTargeted = false
 
-    private var scale: CGFloat { look.size.scale }
+    private func scaled(_ length: CGFloat) -> CGFloat { look.size.scaled(length) }
 
     var body: some View {
-        HStack(spacing: 2 * scale) {
+        HStack(spacing: scaled(2)) {
             // 畳んでいても、左のつまみをドラッグして動かせるようにする
-            grip(width: (isCollapsed ? 11 : 14) * scale)
+            grip(width: scaled(isCollapsed ? 11 : 14))
             if isCollapsed {
                 // 撮影ボタンと見間違えないよう、パネルが伸びる向き（左）を指す記号にする
                 button("chevron.left.2", help: String(localized: "パネルを広げる")) {
@@ -116,9 +117,9 @@ private struct CapturePanelView: View {
                 buttons
             }
         }
-        .padding(.leading, 3 * scale)
-        .padding(.trailing, 5 * scale)
-        .padding(.vertical, 4 * scale)
+        .padding(.leading, scaled(3))
+        .padding(.trailing, scaled(5))
+        .padding(.vertical, scaled(4))
         .background(look.color.background, in: Capsule())
         .overlay(Capsule().strokeBorder(isDropTargeted ? look.color.dropHighlight : AnyShapeStyle(.separator), lineWidth: isDropTargeted ? 2 : 1))
         // どのアプリからでも、パネルに画像を落とせば取り込める（畳んでいても受ける）
@@ -137,7 +138,7 @@ private struct CapturePanelView: View {
     private func grip(width: CGFloat) -> some View {
         Image(systemName: "ellipsis")
             .rotationEffect(.degrees(90))
-            .font(.system(size: 11 * scale, weight: .bold))
+            .font(.system(size: scaled(11), weight: .bold))
             .foregroundStyle(look.color.subdued)
             .frame(width: width, height: look.size.buttonSize)
             .background(WindowDragHandle())
@@ -168,8 +169,8 @@ private struct CapturePanelView: View {
         .disabled(controls.rulers.isEmpty)
         Rectangle()
             .fill(look.color.divider)
-            .frame(width: 1, height: 18 * scale)
-            .padding(.horizontal, 2 * scale)
+            .frame(width: 1, height: scaled(18))
+            .padding(.horizontal, scaled(2))
         button("macwindow", help: String(localized: "Revvy を開く")) {
             controls.presentMainWindow()
         }
@@ -288,6 +289,9 @@ enum CapturePanelSize: String, CaseIterable, Identifiable, Sendable {
 
     var scale: CGFloat { buttonSize / Self.medium.buttonSize }
     var iconSize: CGFloat { 14 * scale }
+
+    /// 中を基準に伸ばした長さ。1pt の線や縁がにじまないよう整数に丸める（中ではそのまま）。
+    func scaled(_ length: CGFloat) -> CGFloat { (length * scale).rounded() }
 }
 
 /// パネルの色。標準はシステムの素材（ライト／ダークに合わせる）。ほかは塗りつぶし、記号は塗りの上で読める白か黒にする。
