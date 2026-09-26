@@ -82,8 +82,12 @@ def main() -> None:
     draw.line((60*s, 130*s, 640*s, 130*s), fill=(222, 233, 226), width=s)
 
     # アイコンは焼き込まず、Finder のドラッグ可能な項目をこの位置に重ねる。
+    # dmg-settings.py の icon_locations と同じ中心。ラベルは円の外に置く。
+    icon_center_y, circle_radius = 236, 70
     for cx in (180, 520):
-        draw.ellipse(((cx-82)*s, 176*s, (cx+82)*s, 340*s), fill=(237, 246, 239, 255))
+        draw.ellipse(((cx-circle_radius)*s, (icon_center_y-circle_radius)*s,
+                      (cx+circle_radius)*s, (icon_center_y+circle_radius)*s),
+                     fill=(237, 246, 239, 255))
     draw.line((293*s, 236*s, 405*s, 236*s), fill=EMERALD, width=3*s)
     draw.line((393*s, 225*s, 405*s, 236*s, 393*s, 247*s), fill=EMERALD, width=3*s)
     draw.text((350*s, 261*s), "DRAG TO INSTALL", anchor="mt", font=font(9*s, bold=True), fill=MUTED)
