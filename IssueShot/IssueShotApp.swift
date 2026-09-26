@@ -94,6 +94,9 @@ struct RevvyApp: App {
                 .keyboardShortcut(controls.shortcuts[.newVerticalGuide]?.menuShortcut)
             Button("横のガイド線を追加") { controls.rulers.addGuide(.horizontal) }
                 .keyboardShortcut(controls.shortcuts[.newHorizontalGuide]?.menuShortcut)
+            Toggle("ガイド線同士の距離を表示", isOn: Binding(
+                get: { controls.rulers.showGuideDistances }, set: { controls.rulers.showGuideDistances = $0 }
+            ))
             Button("ルーラーとガイド線をすべて消す") { controls.rulers.closeAll() }
                 .keyboardShortcut(controls.shortcuts[.clearRulers]?.menuShortcut)
                 .disabled(controls.rulers.isEmpty)

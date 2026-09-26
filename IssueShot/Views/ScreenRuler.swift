@@ -10,6 +10,9 @@ final class ScreenRulers {
     private var panels: [RulerPanel] = []
     private var guides: [GuidePanel] = []
     private(set) var isHidden = false
+    var showGuideDistances = true {
+        didSet { guidesDidChange() }
+    }
 
     var isEmpty: Bool { panels.isEmpty && guides.isEmpty }
 
@@ -87,7 +90,7 @@ final class ScreenRulers {
         let display = RulerDisplay.current()
         for guide in guides {
             let siblings = guides.filter { $0 !== guide && $0.orientation == guide.orientation && $0.screenFrame == guide.screenFrame }
-            let gap = ScreenGuideGeometry.nearestGap(to: guide.position, among: siblings.map(\.position))
+            let gap = showGuideDistances ? ScreenGuideGeometry.nearestGap(to: guide.position, among: siblings.map(\.position)) : nil
             let distance = ScreenGuideGeometry.distanceFromEdge(guide.position, orientation: guide.orientation, screen: guide.screenFrame)
             guide.showLabel(ScreenGuideGeometry.label(orientation: guide.orientation, distance: distance, gap: gap, display: display))
         }
@@ -119,7 +122,7 @@ final class ScreenRulers {
 
 enum ScreenRulerGeometry {
     static let defaultSize = CGSize(width: 320, height: 200)
-    static let minSize = CGSize(width: 24, height: 24)
+    static let minSize = CGSize(width: 1, height: 1)
     /// 端から何ポイントまでを「つまんでサイズ変更」とみなすか
     static let edgeGrip: CGFloat = 8
 
@@ -134,10 +137,13 @@ enum ScreenRulerGeometry {
     /// ビュー内の位置（左下原点）が、どの辺をつまんでいるか
     static func edges(at point: CGPoint, in bounds: CGRect) -> Edges {
         var edges: Edges = []
-        if point.x <= bounds.minX + edgeGrip { edges.insert(.left) }
-        if point.x >= bounds.maxX - edgeGrip { edges.insert(.right) }
-        if point.y <= bounds.minY + edgeGrip { edges.insert(.bottom) }
-        if point.y >= bounds.maxY - edgeGrip { edges.insert(.top) }
+        // 小さいルーラーでは判定領域が重なるので、各軸で近い辺だけを選ぶ。
+        if point.x <= bounds.midX {
+            if point.x <= bounds.minX + edgeGrip { edges.insert(.left) }
+        } else if point.x >= bounds.maxX - edgeGrip { edges.insert(.right) }
+        if point.y <= bounds.midY {
+            if point.y <= bounds.minY + edgeGrip { edges.insert(.bottom) }
+        } else if point.y >= bounds.maxY - edgeGrip { edges.insert(.top) }
         return edges
     }
 
@@ -248,7 +254,9 @@ private final class RulerView: NSView {
         NSColor.black.withAlphaComponent(0.35).setStroke()
         let outer = NSBezierPath(rect: bounds.insetBy(dx: 0.5, dy: 0.5)); outer.lineWidth = 1; outer.stroke()
         tint.setStroke()
-        let inner = NSBezierPath(rect: bounds.insetBy(dx: 1.5, dy: 1.5)); inner.lineWidth = 1; inner.stroke()
+        if bounds.width > 3 && bounds.height > 3 {
+            let inner = NSBezierPath(rect: bounds.insetBy(dx: 1.5, dy: 1.5)); inner.lineWidth = 1; inner.stroke()
+        }
 
         drawTicks(in: bounds)
         if showCenterGuides { drawCenterGuides(in: bounds) }

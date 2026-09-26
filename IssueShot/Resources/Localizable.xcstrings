@@ -1,6 +1,28 @@
 {
   "sourceLanguage" : "ja",
   "strings" : {
+    "ガイド線同士の距離を表示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Distances Between Guides"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "안내선 사이 거리 표시"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示参考线间距"
+          }
+        }
+      }
+    },
     "%@ で撮影 · ⌘⇧V で貼り付け · 画像をここにドロップ" : {
       "localizations" : {
         "en" : {

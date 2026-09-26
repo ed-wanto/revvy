@@ -148,6 +148,8 @@ final class GuidePanel: NSPanel {
     func remove() { owner?.remove(self) }
     func hideAll() { owner?.toggleVisibility() }
     func clearAllRulers() { owner?.closeAll() }
+    var showsGuideDistances: Bool { owner?.showGuideDistances ?? true }
+    func toggleGuideDistances() { owner?.showGuideDistances.toggle() }
 
     func showLabel(_ text: String) {
         labelPanel.setText(text)
@@ -290,6 +292,9 @@ private final class GuideView: NSView {
     override func menu(for event: NSEvent) -> NSMenu? {
         let menu = NSMenu()
         menu.addItem(withTitle: String(localized: "複製"), action: #selector(duplicateGuide), keyEquivalent: "").target = self
+        let distances = menu.addItem(withTitle: String(localized: "ガイド線同士の距離を表示"), action: #selector(toggleGuideDistances), keyEquivalent: "")
+        distances.target = self
+        distances.state = panel?.showsGuideDistances == true ? .on : .off
         menu.addItem(.separator())
         menu.addItem(withTitle: String(localized: "すべてのルーラーを隠す"), action: #selector(hideAll), keyEquivalent: "").target = self
         menu.addItem(withTitle: String(localized: "ルーラーとガイド線をすべて消す"), action: #selector(clearRulers), keyEquivalent: "").target = self
@@ -298,6 +303,7 @@ private final class GuideView: NSView {
     }
 
     @objc private func duplicateGuide() { panel?.duplicate() }
+    @objc private func toggleGuideDistances() { panel?.toggleGuideDistances() }
     @objc private func hideAll() { panel?.hideAll() }
     @objc private func clearRulers() { panel?.clearAllRulers() }
     @objc private func removeGuide() { panel?.remove() }

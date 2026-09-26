@@ -25,6 +25,29 @@ struct ScreenRulerTests {
         #expect(squashed.size == ScreenRulerGeometry.minSize)
         #expect(squashed.maxX == frame.maxX)
         #expect(squashed.maxY == frame.maxY)
+        #expect(squashed.size == CGSize(width: 1, height: 1))
+    }
+
+    @Test func tinyRulerSelectsOnlyNearestEdgesAndCanGrowAgain() {
+        for size: CGFloat in [1, 2, 8, 16, 23] {
+            let frame = CGRect(x: 100, y: 100, width: size, height: size)
+            let bounds = CGRect(origin: .zero, size: frame.size)
+            let nearBottomLeft = ScreenRulerGeometry.edges(at: CGPoint(x: size * 0.25, y: size * 0.25), in: bounds)
+            let nearTopRight = ScreenRulerGeometry.edges(at: CGPoint(x: size * 0.75, y: size * 0.75), in: bounds)
+            #expect(nearBottomLeft == [.left, .bottom])
+            #expect(nearTopRight == [.right, .top])
+            let grown = ScreenRulerGeometry.resized(frame, edges: nearTopRight, by: CGSize(width: 10, height: 10))
+            #expect(grown.origin == frame.origin)
+            #expect(grown.size == CGSize(width: size + 10, height: size + 10))
+        }
+    }
+
+    @Test func resizingBelow24PreservesOppositeEdges() {
+        let frame = CGRect(x: 100, y: 100, width: 24, height: 24)
+        let small = ScreenRulerGeometry.resized(frame, edges: [.right, .bottom], by: CGSize(width: -16, height: 20))
+        #expect(small == CGRect(x: 100, y: 120, width: 8, height: 4))
+        let minimum = ScreenRulerGeometry.resized(small, edges: [.right, .bottom], by: CGSize(width: -100, height: 100))
+        #expect(minimum == CGRect(x: 100, y: 123, width: 1, height: 1))
     }
 
     @Test func keepsNewRulerOnScreen() {
