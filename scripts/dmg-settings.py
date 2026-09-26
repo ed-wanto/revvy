@@ -18,7 +18,8 @@ icon = str(ROOT / "assets" / "dmg" / "VolumeIcon.icns")
 
 # ウインドウ
 background = str(ROOT / "assets" / "dmg" / "background.tiff")
-window_rect = ((240, 180), (700, 440))
+# 440pt の背景にタイトルバーの 32pt を加える。
+window_rect = ((240, 180), (700, 472))
 default_view = "icon-view"
 show_status_bar = False
 show_tab_view = False
@@ -31,11 +32,11 @@ grid_spacing = 100
 scroll_position = (0, 0)
 label_pos = "bottom"
 text_size = 12
-icon_size = 128
+icon_size = 112
 icon_locations = {
-    os.path.basename(APP): (160, 285),
-    "Applications": (540, 285),
+    os.path.basename(APP): (180, 236),
+    "Applications": (520, 236),
 }
 
-# 見せないもの（背景画像そのものなど）
-hide_extension = [os.path.basename(APP)]
+# 署名済みアプリに SetFile を実行すると FinderInfo が付き、厳格な署名検証に失敗する。
+# .app の拡張子は Finder 標準の表示に任せる。

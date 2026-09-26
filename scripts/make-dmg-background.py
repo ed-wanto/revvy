@@ -19,7 +19,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets" / "dmg"
-ICON = ROOT / "IssueShot" / "Assets.xcassets" / "AppIcon.appiconset" / "icon-512.png"
 ICON_1024 = ROOT / "IssueShot" / "Assets.xcassets" / "AppIcon.appiconset" / "icon-1024.png"
 
 WIDTH, HEIGHT = 700, 440
@@ -67,54 +66,30 @@ def background() -> Image.Image:
     return image
 
 
-def rounded_arrow(draw: ImageDraw.ImageDraw, start: tuple[int, int], end: tuple[int, int]) -> None:
-    """ドラッグの向きを示す矢印（破線＋三角）"""
-    x0, y0 = start
-    x1, y1 = end
-    dash, gap = 12 * SCALE, 9 * SCALE
-    x = x0
-    while x < x1 - 18 * SCALE:
-        draw.line([(x, y0), (min(x + dash, x1 - 18 * SCALE), y1)], fill=EMERALD + (255,), width=3 * SCALE)
-        x += dash + gap
-    head = 11 * SCALE
-    draw.polygon(
-        [(x1, y1), (x1 - head * 1.4, y1 - head * 0.8), (x1 - head * 1.4, y1 + head * 0.8)],
-        fill=EMERALD,
-    )
-
-
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     image = background()
     draw = ImageDraw.Draw(image, "RGBA")
     s = SCALE
 
-    # ヘッダー: アイコンとサービス名
-    icon = Image.open(ICON).convert("RGBA").resize((72 * s, 72 * s), Image.LANCZOS)
-    image.paste(icon, (48 * s, 36 * s), icon)
-    draw.text((136 * s, 44 * s), "Revvy", font=font(40 * s, bold=True), fill=INK)
-    draw.text((138 * s, 92 * s), "撮って、書き込んで、そのまま共有。", font=font(15 * s), fill=MUTED)
-    draw.text((138 * s, 114 * s), "Capture, annotate, share.", font=font(13 * s), fill=MUTED)
+    # Finder の実アイコンを主役にし、上部と下部に余白を残す。
+    draw.rounded_rectangle((32*s, 26*s, 668*s, 410*s), radius=24*s,
+                           fill=(255, 255, 255, 185), outline=(214, 230, 222, 255), width=s)
+    draw.text((60*s, 48*s), "Revvy", font=font(34*s, bold=True), fill=INK)
+    draw.text((62*s, 96*s), "Capture. Annotate. Share.", font=font(13*s), fill=MUTED)
+    draw.rounded_rectangle((549*s, 54*s, 640*s, 80*s), radius=13*s, fill=(229, 241, 233))
+    draw.text((565*s, 60*s), "FOR MAC", font=font(10*s, bold=True), fill=(39, 100, 77))
+    draw.line((60*s, 130*s, 640*s, 130*s), fill=(222, 233, 226), width=s)
 
-    # コンセプトの 3 ステップ
-    steps = [
-        ("1", "撮る", "どのアプリの上からでも"),
-        ("2", "書き込む", "枠・矢印・文字・ルーラー"),
-        ("3", "渡す", "GitHub Issue やリンクで"),
-    ]
-    for index, (number, title, detail) in enumerate(steps):
-        x = 48 * s + index * 204 * s
-        y = 158 * s
-        draw.ellipse([(x, y), (x + 22 * s, y + 22 * s)], fill=EMERALD)
-        draw.text((x + 8 * s, y + 3 * s), number, font=font(13 * s, bold=True), fill=(255, 255, 255))
-        draw.text((x + 32 * s, y + 1 * s), title, font=font(16 * s, bold=True), fill=INK)
-        draw.text((x + 32 * s, y + 24 * s), detail, font=font(12 * s), fill=MUTED)
+    # アイコンは焼き込まず、Finder のドラッグ可能な項目をこの位置に重ねる。
+    for cx in (180, 520):
+        draw.ellipse(((cx-82)*s, 176*s, (cx+82)*s, 340*s), fill=(237, 246, 239, 255))
+    draw.line((293*s, 236*s, 405*s, 236*s), fill=EMERALD, width=3*s)
+    draw.line((393*s, 225*s, 405*s, 236*s, 393*s, 247*s), fill=EMERALD, width=3*s)
+    draw.text((350*s, 261*s), "DRAG TO INSTALL", anchor="mt", font=font(9*s, bold=True), fill=MUTED)
 
-    # ドラッグの案内（アイコンは Finder が dmg-settings.py の位置に置く）
-    rounded_arrow(draw, (250 * s, 300 * s), (446 * s, 300 * s))
-    draw.text((48 * s, 372 * s), "Revvy をアプリケーションフォルダへドラッグ", font=font(14 * s, bold=True), fill=INK)
-    draw.text((48 * s, 394 * s), "Drag Revvy into Applications", font=font(12 * s), fill=MUTED)
-    draw.text((466 * s, 394 * s), "macOS 15+ · MIT License", font=font(11 * s), fill=MUTED)
+    draw.text((350*s, 361*s), "Revvy を Applications へドラッグ", anchor="mt", font=font(15*s, bold=True), fill=INK)
+    draw.text((350*s, 386*s), "Drag to Applications to get started.", anchor="mt", font=font(11*s), fill=MUTED)
 
     retina = image
     normal = image.resize((WIDTH, HEIGHT), Image.LANCZOS)

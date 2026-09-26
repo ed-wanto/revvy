@@ -23,6 +23,10 @@ EXPORT="$DIST/export"
 cd "$ROOT"
 
 echo "▶ 前提チェック"
+python3 -c 'import dmgbuild, PIL' || {
+  echo "✗ DMG の作成には python3 の dmgbuild と Pillow が必要です。" >&2
+  exit 1
+}
 if ! security find-identity -v -p codesigning | grep -q "Developer ID Application"; then
   echo "✗ Developer ID Application 証明書が Keychain にありません。" >&2
   echo "  Xcode > Settings > Accounts > (チーム) > Manage Certificates > + > Developer ID Application" >&2
@@ -74,19 +78,8 @@ fi
 
 echo "▶ DMG 作成（インストール画面つき）"
 # 背景とボリュームアイコンを作り直してから、dmgbuild でレイアウトごと組み立てる。
-# dmgbuild が無い環境では、素の DMG にフォールバックする。
 python3 scripts/make-dmg-background.py
-DMGBUILD=$(command -v dmgbuild || echo "$HOME/Library/Python/3.9/bin/dmgbuild")
-if [[ -x "$DMGBUILD" ]]; then
-  REVVY_ROOT="$ROOT" REVVY_APP="$APP_PATH" "$DMGBUILD" -s scripts/dmg-settings.py "$APP" "$DMG"
-else
-  echo "  ! dmgbuild が無いので素の DMG を作ります（pip3 install --user dmgbuild で導入）" >&2
-  STAGE="$DIST/dmg-root"
-  mkdir -p "$STAGE"
-  cp -R "$APP_PATH" "$STAGE/"
-  ln -s /Applications "$STAGE/Applications"
-  hdiutil create -volname "$APP" -srcfolder "$STAGE" -ov -format UDZO -quiet "$DMG"
-fi
+REVVY_ROOT="$ROOT" REVVY_APP="$APP_PATH" python3 scripts/build-dmg.py "$DMG"
 codesign --sign "Developer ID Application" --timestamp "$DMG"
 
 if (( NOTARIZE )); then
@@ -103,6 +96,6 @@ else
   echo "▶ 公証はスキップ（--no-notarize）。配布前に make dist を実行すること"
 fi
 
-rm -rf "${STAGE:-}" "$EXPORT" "$ARCHIVE"
+rm -rf "$EXPORT" "$ARCHIVE"
 echo
 echo "✅ 完成: $DMG"
